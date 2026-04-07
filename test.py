@@ -89,7 +89,7 @@ def maturity_label(p):
         return "Mature", "green"
 
 # ==============================
-# SCORE CALCULATION
+# SCORE CALCULATION (UPDATED FOR AGGREGATE)
 # ==============================
 def calculate_score(df_filtered, cols, aggregate=False):
     total = 0
@@ -98,7 +98,7 @@ def calculate_score(df_filtered, cols, aggregate=False):
     if df_filtered.empty:
         return 0, 0, 0
 
-    # OVERALL MODE
+    # 👉 OVERALL MODE
     if aggregate:
         for _, row in df_filtered.iterrows():
             for col in cols:
@@ -115,7 +115,7 @@ def calculate_score(df_filtered, cols, aggregate=False):
                 if actual == expected:
                     correct += 1
 
-    # SINGLE FPO MODE
+    # 👉 SINGLE FPO MODE
     else:
         row = df_filtered.iloc[0]
 
@@ -137,7 +137,7 @@ def calculate_score(df_filtered, cols, aggregate=False):
     return correct, total, percent
 
 # ==============================
-# SECTIONS
+# SECTION GROUPING
 # ==============================
 sections = {
     "FPO Registration": [c for c in df.columns if "fpo_registration-" in c],
@@ -165,7 +165,7 @@ if "action_plan_df" not in st.session_state:
     st.session_state.action_plan_df = None
 
 # ==============================
-# FILTER
+# FILTER DATA
 # ==============================
 def get_df():
     if not st.session_state.selected_fpo:
@@ -179,11 +179,17 @@ if st.session_state.selected_section is None:
 
     show_header()
 
-    # UPPERCASE dropdown
+    # 👉 UPPERCASE display
     fpo_list = [""] + df["fpo_registration-fpo_name"].dropna().str.upper().unique().tolist()
 
-    # ✅ FIXED: stable selection
-    st.selectbox("Select FPO", fpo_list, key="selected_fpo")
+    selected = st.selectbox(
+        "Select FPO",
+        fpo_list,
+        index=fpo_list.index(st.session_state.selected_fpo)
+        if st.session_state.selected_fpo in fpo_list else 0
+    )
+
+    st.session_state.selected_fpo = selected
 
     data = get_df()
     scores = []
@@ -218,7 +224,6 @@ if st.session_state.selected_section is None:
                 if st.button("View details", key=section):
                     st.session_state.selected_section = section
                     st.session_state.action_plan_df = None
-                    st.rerun()
 
     overall = int(sum(scores) / len(scores)) if scores else 0
 
@@ -239,6 +244,7 @@ else:
     section = st.session_state.selected_section
     st.markdown(f"<h2 style='color:#0073e6;'>{section}</h2>", unsafe_allow_html=True)
 
+    # 👉 NEW CONDITION
     if not st.session_state.selected_fpo:
         st.warning("Select FPO to view details")
 
@@ -316,4 +322,3 @@ else:
 
     if st.button("⬅️ Back"):
         st.session_state.selected_section = None
-        st.rerun()
