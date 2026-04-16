@@ -1,0 +1,8 @@
+# Ignore Excel files
+*final_mapped_output_april 9.xlsx
+*final_mapped_output1.xlsx
+*FPO Support _ODK.xlsx
+*FPO Profile.csv
+
+# Ignore virtual environment
+venv/
